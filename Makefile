@@ -1,4 +1,4 @@
-all: clean diagram.png README.pdf export
+all: clean diagram.png README.pdf
 
 %.pdf: %.md
 	pandoc $< -o $@
