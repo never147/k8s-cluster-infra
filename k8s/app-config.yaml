@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: org
+data:
+  config: |
+    port: 8080
+    logLevel: DEBUG
+    authInfo:
+      userGroups:
+        - cp_users
+        - cp_dev_users
+      analystGroups:
+        - cp_analysts
+        - cp_dev_analysts
+    healthcheck:
+      port: 8081
+    metrics:
+      port: 8000

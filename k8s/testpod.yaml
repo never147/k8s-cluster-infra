@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: org-test
+  namespace: org
+spec:
+  containers:
+  - name: org-test-container
+    image: 99999999.dkr.ecr.eu-west-2.amazonaws.com/org_test:1
+    env:
+      - name: DEVOPS_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: devopssecret
+            key: secret
+    volumeMounts:
+      - name: config-volume
+        mountPath: /config
+    args:
+      - /config/config.yaml
+  volumes:
+    - name: config-volume
+      configMap:
+        name: app-config
+        items:
+        - key: config
+          path: config.
+  imagePullSecrets:
+  - name: awsecrregistrykey

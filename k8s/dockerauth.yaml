@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: awsecrregistrykey
+  namespace: org
+data:
+  # Run:
+  # aws ecr get-login-password --profile $aws_user \
+  #   | docker login --username AWS --password-stdin \
+  #     99999999.dkr.ecr.eu-west-2.amazonaws.com/org_test
+  # base64 -w0 <~/.docker/config.yaml  # assuming this is the only auth entry!
+  .dockerconfigjson: <<<REPLACE_WITH_BASE64_ENCODED_CONFIG_JSON>>>
+
+type: kubernetes.io/dockerconfigjson

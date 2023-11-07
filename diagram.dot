@@ -1,0 +1,138 @@
+digraph G {
+    // Defaults for graphs
+	graph [
+        layout=dot
+        rankdir=TB
+        fontname="Noto Sans Display"
+        bgcolor=grey40
+        style=dotted
+        color=white
+        fontcolor=white
+    ]
+    // Defaults for nodes
+    node [
+        fontname="Noto Sans Display"
+        height=1
+        width=2
+        style=filled
+    ]
+    // Defaults for edges
+    edge [
+        fontname="Noto Sans Display"
+        fontcolor=white
+        color=white
+        penwidth=3
+    ]
+    // End boilerplate
+
+    graph [label="Qumodo App infra"]
+
+    // Node attribute definitions
+    Internet [shape=circle color=lightblue]
+    Client [shape=circle color=lightblue]
+    Operator [color=gold2]
+    Bastion [color=gold2]
+
+    JumpHost [color=gold2]
+    IP [shape=hexagon]
+    LB_1 [color=peachpuff3]
+    LB_2 [color=peachpuff3]
+    AppContainers_1 [shape=diamond]
+    AppContainers_2 [shape=diamond]
+    AppContainers_3 [shape=diamond]
+
+    FluentBit_1 [label="Fluentbit" color="tan2"]
+    FluentBit_2 [label="Fluentbit" color="tan2"]
+    FluentBit_3 [label="Fluentbit" color="tan2"]
+    PrometheusCollector_1 [label="PrometheusCollector" color="tan2"]
+    PrometheusCollector_2 [label="PrometheusCollector" color="tan2"]
+    PrometheusCollector_3 [label="PrometheusCollector" color="tan2"]
+
+    VPN [shape=hexagon]
+    CloudWatch [color=orange]
+    Route53 [color=orange]
+
+    // subgraph definitions and edges
+    subgraph cluster_sec_vpc {
+        penwidth=5
+        style=bold
+        label="Security VPC"
+        VPN
+        Bastion
+    }
+    VPN -> Bastion -> JumpHost
+    Operator -> VPN
+
+    subgraph cluster_LB_vpc {
+        style=bold
+        label="LB VPC (public)"
+        IP -> {LB_1 LB_2}
+        NATEgressProxy
+    }
+    Client -> Route53 -> IP
+    NATEgressProxy -> Internet [style=dotted color=pink]
+    {
+        rank=same
+        Internet
+        Client
+        Operator
+    }
+    {
+        rank=same
+        IP
+        VPN
+    }
+
+    subgraph cluster_app_vpc {
+        style=bold
+        label="main App VPC (private)"
+        JumpHost
+        subgraph cluster_node_pool {
+            style=dotted
+            label="EKS node pool"
+            control_plane
+            subgraph cluster_app_pod_1 {
+                label="App Pod 1"
+                {LB_1 LB_2} -> AppContainers_1
+                AppContainers_1 -> {
+                    PrometheusCollector_1
+                    FluentBit_1
+                } [style=dotted]
+            }
+            subgraph cluster_app_pod_2 {
+                label="App Pod 2"
+                {LB_1 LB_2} -> AppContainers_2
+                AppContainers_2 -> {
+                    PrometheusCollector_2
+                    FluentBit_2
+                } [style=dotted]
+            }
+            subgraph cluster_app_pod_3 {
+                label="App Pod 3"
+                {LB_1 LB_2} -> AppContainers_3
+                AppContainers_3 -> {
+                    PrometheusCollector_3
+                    FluentBit_3
+                } [style=dotted]
+            }
+        }
+    }
+    {
+        FluentBit_1
+        FluentBit_2
+        FluentBit_3
+        PrometheusCollector_1
+        PrometheusCollector_2
+        PrometheusCollector_3
+    } -> CloudWatch [color=pink style=dotted]
+    {
+        AppContainers_1 AppContainers_2 AppContainers_3
+    } -> NATEgressProxy [color=pink style=dotted]
+
+    //subgraph cluster_monitor {
+    //    label="Monitoring VPC"
+    //    Graphite
+    //    Graphana
+    //}
+
+}
